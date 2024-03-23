@@ -1,0 +1,706 @@
+% !TeX spellcheck = pt_BR
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                                              %
+%                             Definicao para a classe Artigo                                   %
+%                                                                                              %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\documentclass[portugues, brazil, a4paper,12pt]{article}
+\bibliographystyle{plain}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                                              %
+%                       Pacotes a utilizar na compilacao do documento                          %
+%                                                                                              %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\usepackage[brazil]{babel}
+\usepackage{graphicx}
+\usepackage{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{algorithm}
+\usepackage{color}
+\usepackage{minted}
+%\usepackage{algorithmic}
+\usepackage[noend]{algpseudocode}
+\usepackage{epstopdf}
+\usepackage{hyperref}
+\usepackage{todonotes}
+\usepackage{amsmath}
+\usepackage{verbatim}
+\usepackage{gensymb}
+\usepackage{subfigure}
+
+\hypersetup{
+    colorlinks,
+    citecolor=black,
+    filecolor=black,
+    linkcolor=black,
+    urlcolor=black
+}
+
+
+\title{Seguidor de Linha Controlado}
+
+\makeatletter
+\renewcommand{\paragraph}{\@startsection{paragraph}{4}{0ex}%
+   {-3.25ex plus -1ex minus -0.2ex}%
+   {1.5ex plus 0.2ex}%
+   {\normalfont\normalsize\bfseries}}
+\makeatother
+
+\stepcounter{secnumdepth}
+\stepcounter{tocdepth}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                                              %
+%                       Configuracao dos pacotes utilizados no doc.                            %
+%                                                                                              %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\geometry{a4paper,left=3cm,right=3cm,top=2.5cm,bottom=2.93cm}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                                              %
+%                             Capa do relatorio tecnico                                        %
+%                                                                                              %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+
+\begin{titlepage}
+
+  \vfill
+
+	\begin{figure}[H]
+	\centering
+		\includegraphics[scale=0.15]{img/logo-ufop.jpg}
+	\end{figure}
+  \vfill
+
+  \begin{center}
+    \begin{Large}
+      \textbf{UNIVERSIDADE FEDERAL DE OURO PRETO}
+    \end{Large}
+  \end{center}
+
+  \begin{center}
+    \begin{large}
+      \textbf{Mestrado em Ciência da Computação} \\[1.4cm]
+    \end{large}
+  \end{center}
+
+  \vfill
+
+  \begin{center}
+    \begin{large}
+      \textbf{Relatório de Projeto e Desenvolvimento do Carro Robô Seguidor de Linha Utilizando Controle Proporcional}
+    \end{large}
+  \end{center}
+
+  \vfill
+
+  \begin{center}
+    \begin{large}
+      Disciplina: \\
+		Sistemas Embutidos Avançados
+    \end{large}
+  \end{center}
+
+  \vfill
+
+  \begin{center}
+    \begin{large}
+      Autor: \\
+		Rodolfo Labiapari Mansur Guimarães - \url{rodolfolabiapari@decom.ufop.br}
+    \end{large}
+  \end{center}
+
+	\vfill
+
+  \begin{center}
+    \begin{large}
+      Professor: \\
+      Dr. Ricardo Augusto Rabelo Oliveira - \url{rrabelo@gmail.com}
+    \end{large}
+  \end{center}
+
+  \vfill
+
+  \begin{center}
+    \begin{large}
+      Ouro Preto - MG \\
+      \today \\
+    \end{large}
+  \end{center}
+
+\clearpage
+\tableofcontents
+\end{titlepage}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                                              %
+%                               Introducao ao trabalho                                         %
+%                                                                                              %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\part{Especificação de Projeto Embarcado}
+
+\section{Introdução}
+	Atualmente é possível construir Carro Robô Seguidor de Linha utilizando poucos componentes e com poucas linhas de programação, além da facilidade em encontrar em sites de venda de eletrônicos kits de sensores e atuadores de baixo custo prontos para serem acoplados à placa de prototipagem e assim a construção de um carro seguidor.
+
+	O desenvolvimento do sistema controlador também segue o mesmo princípio de facilitação de uso. Utilizando uma plataforma de prototipagem tal como Arduino, é possível escrever o controle de um carro seguidor com poucas linhas de instruções. Isso pode ser levado como um desafio até para crianças e adolescentes com criatividade e entusiasmo para desenvolver um sistema completo e funcional como incentivo à robótica.
+
+	Na Seção \ref{sec:especificacao} será exibido a especificação deste trabalho e na Seção \ref{sec:rt} é feito toda a introdução teórica sobre o tema. Em Seção \ref{sec:elem-teo} é descrito com detalhes todos os elementos que serão utilizados para fazer este projeto ser concretizado, em \ref{sec:math} é feito uma exibição das definições matemáticas que o projeto levará em consideração para seu funcionamento. Na Segunda parte do documento (Parte \ref{sec:parte2}), é relatado como foi realizado a Construção do Projeto (Seção \ref{sec:construcao}), a Relação de Recorrência (Seção \ref{sec:recorrencia}), os Obstáculos (Seção \ref{sec:obstaculos}), Análise Analítica (Seção \ref{sec:analitico}) e por fim a Conclusão (\ref{sec:conclusao}).
+	
+\section{Especificações} \label{sec:especificacao}
+	Abaixo é escrito a especificação segundo Professor Rabelo Oliveira \href{mailto:rrabelo@gmail.com}{rrabelo@gmail.com}.
+	\begin{verbatim}
+		Neste trabalho, o robô será controlado por uma instância externa na Cloud, que
+		ira efetuar a leitura dos dados transmitidos pelo robo via NodeMCU para
+		retornar como feedback para os atuadores.
+		O caminho executado/aprendido pelo robô deverá ser usado para controlar um
+		segundo robô que não possui sensores. Considere o ponto de partida similar
+		para ambos.
+		A programação do segundo robo será enviada pela Cloud que contem os dados
+		e algoritmo do primeiro robo.
+		O trabalho consistirá em duas entregas
+		Primeira Entrega - Especificação do projeto: devera conter de maneira
+		detalhada as seguintes características:
+		a- Referencial teórico
+		b- Proposta dos sensores do primeiro robo
+		c- Proposta dos atuadores dos robos, explicando como serão programados
+		d- Alimentação do sistema, indicando como sera montada a parte da
+		alimentação dos motores e do NodeMCU
+		e- Modelo matemático considerando os dados dos sensores discretos.
+		f- A SOLUÇÃO DA EQUAÇÃO DEVERA SER DISCRETA
+		SOMENTE DE PRIMEIRA ORDEM
+		g- Arquitetura para a execução do controle de primeira ordem nas nuvens
+		e o envio dos dados pela internet, Indicar a solução de Cloud para uso (azure,
+		amazon, watson, etc)
+		Data entrega:08/02/2017
+	\end{verbatim}
+
+
+\section{Referencial Teórico} \label{sec:rt}
+
+	\subsection{Malhas em um Sistema de Controle}
+
+		\subsubsection{Malha Aberta}
+			A principal característica do sistema em malha aberta é a inexistência de realimentação.
+
+			Os  valores  assumidos  pela  variável de  controle  não  dependem dos  valores  da  variável  de saída, sendo assim, a  ação  de  controle  é  função  apenas  do processamento da variável de referência pelo controlador. Exemplo demonstrado em Figura \ref{fig:malha_aberta}
+
+			\begin{figure}[h]
+				\centering
+				\includegraphics[width=\linewidth]{img/rf-malha_aberta.jpg}
+				\caption{Sistema onde utiliza-se Malha Aberta. Sistemas que não possuem realimentação.}
+				\label{fig:malha_aberta}
+			\end{figure}
+
+			Dessa forma, o processamento de dados é puramente absoluto, sem observar dados de processamento anteriores tendo assim uma visão unicamente momentânea.
+
+			Um exemplo disso no caso aqui trabalho é o armazenamento dos valores de \textit{Pulse-Width Modulation} (PWM) do primeiro carro, e a execução direta desses valores num segundo carro ignorando o erro relativo que os motores geram entre si no ambiente testado. Essa prática não permite o controle de velocidade dos motores de corrente contínua utilizando apenas os valores de PWM tornando o controle do tipo Malha Aberta.
+
+
+		\subsubsection{Malha Fechada}
+			Já o sistema de controle em malha fechada, também é denotado de sistema de  controle  por  realimentação.
+
+			A  saída $ y $ é  medida e comparada com   a   saída   desejada,   indicada   através   da referência $ r $,   para processamento  através  do  controlador  e  a  consequente  definição  da  ação  de controle $ u $, exibido em Figura \ref{fig:malha_fechada}.
+
+			\begin{figure}[h]
+				\centering
+				\includegraphics[width=\linewidth]{img/rf-malha_fechada.png}
+				\caption{Sistema onde utiliza-se Malha Fechada. Sistemas onde existem um mecanismo de realimentação no controle de determinada ação.}
+				\label{fig:malha_fechada}
+			\end{figure}
+
+			Neste trabalho é utilizado Malha Fechada. O sistema de realimentação utiliza como entrada, dados de processamentos anteriores criando assim uma proporcionalidade mais autêntica á situação a ser trabalhada. Ela será discutida ao decorrer do relatório.
+
+
+	\subsection{Sistema Controlador Proporcional Usando Equação Diferencial Lineal de Primeira Ordem} \label{sec:eql1}
+		Sistemas de controle é um sistema que possui o propósito de gerenciar o comportamento de outros dispositivos. Pode-se dizer que é uma interconexão de componentes conectados de maneira a comandar, controlar ou ajustar a si mesmo ou outro sistema obtendo uma precisão maior em seus procedimentos.
+
+		A teoria de controladores proporcionais se baseiam em sistemas realimentados. Tais podem ser divididos em basicamente três partes sendo elas:
+
+		\begin{itemize}
+			\item Sistema a ser controlado;
+			\item Controlador; e
+			\item Realimentação.
+		\end{itemize}
+
+		O sistema a ser controlado é constituído por atuadores capazes de efetuar as ações necessárias. Os outros dois elementos têm como finalidade fazer com que o desempenho do sistema possua estabilidade e opere com certa precisão e agilidade, seguindo as especificações uma vez estabelecidas. Uma vez estabelecido como o sistema deverá ser desenvolvido, os controladores e sua realimentação serão item essencial para que o processo ocorra de forma estável. Tudo isso pode ser observado no diagrama exibido na Figura \ref{fig:estrutura_sistema_controle}.
+
+		\begin{figure}[h]
+			\centering
+			\includegraphics[width=\linewidth]{img/math-realimentacao.png}
+			\caption{Estrutura de Sistema de Controle Geral Realimentado.}
+			\label{fig:estrutura_sistema_controle}
+		\end{figure}
+
+		A realimentação é o ponto chave para a diferenciação de sistemas controladores comuns. Um sistema de controle realimentado compara, instantaneamente, o valor de saída anterior, com o valor de referência existente na entrada do sistema como os sensores. O resultado desta comparação é o centro de toda adaptabilidade estudada e é denominado erro atuante. Este é levado ao controlador, que produz o chamado sinal de controle, cuja função resume-se em reduzir o desvio entre a saída e o sinal desejado. Como o nome sugere, em um controlador proporcional a saída do mesmo, também conhecido como sinal de controle (ou ação de controle), é diretamente proporcional ao sinal de erro, ou seja, ao erro atuante.
+
+		Sabendo-se em da proporcionalidade direta entre o sinal de controle e o sinal de erro, é possível afirmar que
+
+		\begin{equation}
+			a(t) \propto e(t)
+		\end{equation}
+
+		onde o controle é diretamente proporcional à seu erro.
+
+		Entretanto, não é possível realizar operações matemáticas exatas com o sinal de proporção da fórmula. Para isso, deve-se admitir então uma constante de proporcionalidade entre as mesmas. Esta possui o nome de ganho proporcional e é representado pela variável $f$. Sendo assim
+
+		\begin{equation}
+			a(t) = f * e(t) \label{eq:formula_geral}
+		\end{equation}
+
+		e dessa forma, o sistema matemático mostrado na Equação \ref{eq:formula_geral} poderá ser representado pelo diagrama exibido na Figura \ref{fig:sistema_dominio_tempo}.
+
+		\begin{figure}[h]
+			\centering
+			\includegraphics[width=\linewidth]{img/math-diagrama_geral.png}
+			\caption{Sistema no Domínio do Tempo Geral.}
+			\label{fig:sistema_dominio_tempo}
+		\end{figure}
+
+		Sendo assim, como fórmula final, temos
+
+		\begin{equation}
+			a(t) = f * (r(t) - s(t))
+		\end{equation}
+
+		onde $a(t)$ é a atuação, $e(t)$ representa o erro, $ r(t) $ é o valor de início de execução de controle e $ s(t) $ é saída do controle. Todos representando o valor no tempo $t$.
+
+
+	\subsection{Velocidade Angular} \label{sec:velocidade_angular}
+		A diferença gerada entre cada intervalo de tempo permite calcular a velocidade angular de cada motor como é exibido na Figura \ref{fig:angular_velocity}.
+
+		\begin{figure}[h]
+			\centering
+			\includegraphics[width=0.65\linewidth]{img/math-angular_velocity.jpg}
+			\caption{Ilustração do cálculo da velocidade angular.}
+			\label{fig:angular_velocity}
+		\end{figure}
+
+		Para exemplificação, suponha que motor está em movimento de rotação. Em um dado instante $t_1$, encontra-se à um certo ângulo $\theta_1$ medido em relação à certo ponto. Após certo tempo, no instante $t_2$, encontra-se à um certo ângulo $\theta_2$ medido em relação ao mesmo ponto. Denomina-se velocidade angular média a taxa de variação temporal de tais ângulos. Ou seja,
+
+		\begin{equation}
+			\omega = \frac{\theta_2 - \theta_1}{t_2 - t_1} = \frac{\Delta \theta}{\Delta t},
+			\begin{cases}
+				\Delta \theta & \quad \text{é o deslocamento angular}\\
+				\Delta t      & \quad \text{é a variação de tempo}\\
+			\end{cases}
+		\end{equation}
+
+		sendo a velocidade angular instantânea é determinada quando o valor de $\Delta t$ tende a zero
+
+		\begin{equation}
+			w = \lim_{\Delta t \to 0} \frac{\Delta \theta}{\Delta t} = \frac{d \theta}{d t}
+		\end{equation}
+
+		lembrando que $ 2 \pi\ rad = 360\degree$.
+
+
+\section{Elementos do Projeto} \label{sec:elem-teo}
+
+	\subsection{Visão Geral da Especificação}
+		Como já mencionado na Especificação (Seção \ref{sec:especificacao}), existirá dois robores e uma computação em nuvem.
+
+		O trabalho consiste em replicar as ações de um carro $ \mathcal{A} $ repleto de sensores em um carro $ \mathcal{B} $ inexistindo os sensores de luz para detecção de faixa. Além disso, o processamento de dados e tomada de decisões será totalmente feita em nuvem, deixando os carros unicamente como plataformas de leitura de sensores e atuadores.
+
+		Como é representado na Figura \ref{fig:diagrama}, o carro $ \mathcal{A} $ terá sensores e atuadores. Seus dados não serão processados nele em si, mas sim em um computador externo ao sistema atuador. Após a execução do trajeto, a \textit{cloud} teria dados suficientes, providos de vários sensores, para fazer o carro $ \mathcal{B} $ realizar o mesmo trajeto.
+
+		Para que isso possa ser realizado, cada carro terá seus dispositivos e um componente Wi-Fi para envio e recebimento de dados sem fio à \textit{access points} e assim conexão com a \textit{cloud}.
+
+		\begin{figure}[h]
+			\centering
+			\includegraphics[width=0.5\linewidth]{img/diagrama_geral.png}
+			\caption{Diagrama Geral Abstrato do Sistema.}
+			\label{fig:diagrama}
+		\end{figure}
+
+		Deve-se atentar que os dois carros possuem características e propósitos diferentes e que todo o processamento é realizado na \textit{cloud} e não nos carros sendo estes somente para captação de dados e execução de tarefa com seus atuadores.
+
+		Abaixo será descrito cada componente do sistema e algumas propriedades importantes.
+
+	\subsection{Sensores do Carro $ \mathcal{A} $}
+		O projeto do carro $ \mathcal{A} $ utilizou-se de vários tipos de sensores.
+
+		Utilizar somente o sensor fototransistor seria suficiente para o projeto de seguido de linha, mas não para este em si que necessita de um item controlador. Sua função é unicamente para direcionar o carro informando o controle a situação para que ele não saia da linha completando o trajeto. Usando somente ele, é impossível que o carro saiba sua posição e seus movimentos para a reprodução no segundo carro.
+
+		Para contornar este problema, necessita-se de do sensor de contador de giros da roda chamado \textit{Encoder}. Ele, junto com o fototransistor, serão mencionados nas Seções \ref{sec:fototransistor} e \ref{sec:movimentos}.
+
+
+		\subsubsection{Sensor de Luz - Fototransistor} \label{sec:fototransistor}
+
+			\paragraph{Tecnologia}
+				Para o carro, será utilizado o sensor fototransistor. Em sua superfície, existirá um LED que fará a iluminação da área no qual refletirá sobre a superfície e chegará até o sensor fototransistor. Como o seguidor de linha move sobre dois tipos de superfície (branca e preta), é possível identificar quando ele sairá da direção correta. Essa ideia melhor visualizada com a Figura \ref{fig:ft}.
+
+				\begin{figure}[h]
+					\centering
+					\includegraphics[width=0.45\linewidth]{img/elementos-fototransistor.jpg}
+					\caption{Funcionamento do sensor Fototransistor.}
+					\label{fig:ft}
+				\end{figure}
+
+			\paragraph{Propósito do Projeto}
+				O projeto utilizará não somente dois sensores deste tipo mas uma série deles, posicionados logo à extremidade da faixa de direção como é exibido na Figura \ref{fig:dois_sensores}.
+
+				\begin{figure}[h]
+					\centering
+					\includegraphics[width=0.9\linewidth]{img/elementos-line_tracking.png}
+					\caption{Posição dos Sensores. Exemplo utilizando dois sensores.}
+					\label{fig:dois_sensores}
+				\end{figure}
+
+				Utilizando uma série de sensores, cada sensor será responsável por avaliar se o carro saiu da linha original. Quanto mais à extremidade a faixa estiver em relação à série de sensores, maior será o erro dela e assim, a consequente uma correção mais rápida. Quanto maior a quantidade de arranjo de sensores melhor será a performance do carro pelo motivo que mais sensores representarão melhor o nível do erro. Por este motivo, será utilizado seis sensores, posicionando três em cada extremidade da faixa. Eles serão dispostos o mais próximo possível de seu adjacente pois a resolução de operação será melhor do que distâncias grandes como três centímetros ou mais. Um exemplo com 8 sensores é exibido na Figura \ref{fig:sensores_series}.
+
+				\begin{figure}[h]
+					\centering
+					\includegraphics[width=0.7\linewidth]{img/elementos-sensores_series.jpg}
+					\caption{Sensores posicionados em uma \textit{board} em série.}
+					\label{fig:sensores_series}
+				\end{figure}
+
+
+		\subsubsection{Sensores de Movimento} \label{sec:movimentos}
+			Como já descrito na Seção \ref{sec:fototransistor}, sensores fototransistores não conseguem realizar gravações de que detectam movimento. Para suprir essa necessidade utilizar-se-á um sensor que contará a quantidade de rotações que a roda fará.
+
+			\paragraph{Codificador de Rotações} \label{sec:encoder}
+				Um \textit{rotary encoder}, é um dispositivo eléctro-mecânico que converge a movimento do eixo para valores digitais/analógicos. O sensor utilizado foi do tipo incrementa/relativo no qual a saída do \textit{encoder} provê informações sobre o movimento do eixo no qual é possível obter informações de velocidade, distância e posição.
+
+				Ele trabalha percebendo alteração de posição no qual deve ser analisado e processado por um componente externo a ele, que no caso deste trabalho é o próprio controlador.
+
+				A Figura \ref{fig:encoder} exibe o mecanismo de leitura de movimento dos \textit{encoders} utilizados no trabalho.
+
+				\begin{figure}[h]
+					\centering
+					\includegraphics[width=0.6\linewidth]{img/elementos-encoder.jpg}
+					\caption{Visão técnica sobre o funcionamento do \textit{encoder} para detecção de movimento.}
+					\label{fig:encoder}
+				\end{figure}
+
+				Cada roda possui o formato $ 65mm $ por $ 30mm $ de largura. Uma rotação completa, segundo a fórmula $ P = d \pi $, mostra que o carro percorreu $ 204,2035224833 = 64 \pi $ mm, ou seja, cerca de $ 20,42 $ centímetros.
+
+				O \textit{encoder} utilizado disponibilizado neste trabalho possui 20 furos. Isso permite um total máximo de 40 \textit{trick} ao analisar espaços vazados ou não. Sendo assim é possível calcular movimentos a cada $9\degree$ rodados, significando detecções de movimentos a cada $\frac{360}{20,42} = \frac{9}{x} \equiv 0,5105$ centímetros percorridos.
+
+		\begin{comment}
+		\subsubsection{Sensores de Movimento} \label{sec:movimentos}
+			Como já descrito \ref{sec:fototransistor}, sensores fototransistores não conseguem realizar gravações de que detectam movimento. Para suprir essa necessidade utilizar-se-á de dois outro tipos de sensores que detectarão movimento. O acelerômetro e o giroscópio.
+
+
+			\paragraph{Acelerômetro}
+				Consegue capturar dados de duas à três dimensões (como mostra a Figura \ref{fig:accelerometer}) podendo reconhecer qualquer tipo de movimento do ambiente onde está instalado.
+
+				\begin{figure}[h]
+					\centering
+					\includegraphics[width=0.9\linewidth]{img/elementos-accelerometer.jpg}
+					\caption{Visão técnica sobre o funcionamento do acelerômetro.}
+					\label{fig:accelerometer}
+				\end{figure}
+
+				O sensor acelerômetro será utilizado para captar dados de deslocamento do carro como aceleração e distância percorrida.
+
+				Entretanto, velocidade e distância também não são suficientes para o projeto do carro como um todo, e por isso será mencionado o uso de giroscópio.
+
+
+			\paragraph{Giroscópio}
+				O giroscópio é um sensor que consegue captar a angulação de determinado objeto à ele instalado, mesmo depois de realizar movimentos.
+
+				Assim, utilizando o aceleração e angulação, é possível registrar o trajeto que o carro realizou ao percorrer a trilha da faixa. Um exemplo da tecnologia utilizada hoje nos dispositivos embarcados é exibido na Figura \ref{fig:gyroscope}.
+
+				\begin{figure}[h]
+					\centering
+					\includegraphics[width=0.6\linewidth]{img/elementos-gyroscope.jpg}
+					\caption{Exemplo de giroscópio situado em telefones digitais modernos.}
+					\label{fig:gyroscope}
+				\end{figure}
+
+
+			\paragraph{Resultado da Combinação desses Sensores}
+				Assim, o sensor fototransistor realizará a leitura do trajeto a ser feito, o acelerômetro receberá a velocidade atual do carro e o giroscópio registrará a angulação do carro.
+
+				Tudo isso processado permite a reprodução exata no carro $ \mathcal{B} $, mesmo sem utilizar nenhum sensor.
+			\end{comment}
+
+
+	\subsection{Atuadores}
+
+		\subsubsection{Motores de Corrente-Contínua}
+			Motores de corrente contínua baseiam-se no fluxo ordenado de elétrons sempre numa direção. São equipamentos que podem ser alimentados por tensões desde $1,2V$ até $24V$ e pode-se dizer de modo geral que é um equipamento que é capaz de converter energia elétrica em mecânica e vice-versa. 
+
+			Falando de suas estruturas físicas, um motor de corrente contínua possui um conjunto de ímãs permanentes fixos, criando um campo magnético fixo enquanto o rotor é percorrido por uma corrente. Por meio de escovas e comutadores, a direção da corrente é alterada constantemente, fazendo com que o rotor gire continuamente. 
+            %De forma analítica, se ímãs permanentes são usados para gerar o campo magnético, o torque de saída $T$ é proporcional ao fluxo magnético $\phi$ e à corrente nos enrolamentos do motor $i$.
+
+			Possuem como vantagens a qualidade de serem bons para quaisquer tamanhos de robôs, engrenagens para redução de inércia, confiáveis, de baixa manutenção. Como pontos negativos, eles possuem baixa rigidez, necessidade de engrenagens para inúmeros projetos, folgas, custo, peso e necessidade de frenagem caso não alimentado.
+
+			Diferente de motores de passo, no qual seu giro ocorre por meio de troca de suas angulações de forma sequencial, os motores de corrente contínua determinam sua velocidade de rotação com valores proporcionais à tensão no rotor. Como essa velocidade é totalmente relativa à tensão, é necessário componentes adicionais para determinar a velocidade de giro do motor. 
+            
+            As plataformas de prototipagem fornecem esses controles de tensão por meio de sinais PWM, descritos a seguir.
+
+		\subsection{PWM}
+			Os controles de potência PWM (\textit{Pulse Width Modulation}) são altamente indicados para aplicações em robótica pela possibilidade de se manter o torque mesmo em baixas velocidades. 
+
+			Nos controles PWM o que se faz é variar a largura do pulso de uma tensão retangular aplicada à carga de modo obter-se um controle sobre a potência média aplicada, como é demonstrado na Figura \ref{fig:pwm}.
+
+			\begin{figure}[h]
+				\centering
+				\includegraphics[width=0.5\linewidth]{img/math-pwm.png}
+				\caption{Sinais PWM.}
+				\label{fig:pwm}
+			\end{figure}
+
+
+		\subsubsection{Engrenagens de Redução}
+			Motores elétricos giram em altas velocidades e quando necessita de torque elevado ou baixas rotações devem ser usados um conjunto de engrenagens de redução. 
+
+			Naturalmente, isso aumenta o custo, o número de peças, a folga, a inércia do corpo rotativo, e assim por diante, mas também a resolução do sistema, já que com os trens de engrenagem é possível girar o elo de um pequeno ângulo como é demonstrado na Figura \ref{fig:reducao} um exemplo de redução.
+
+			\begin{figure}[h]
+				\centering
+				\includegraphics[width=0.5\linewidth]{img/math-reducao.jpg}
+				\caption{Sistema simples de trens de engrenagens no qual gerará reduções.}
+				\label{fig:reducao}
+			\end{figure}
+
+			Para um motor pequeno, esta taxa de redução permite uma multiplicação considerável de sua força, o que quer dizer que no eixo de redução obtém-se um torque considerável como produto final. Entretanto, o torque é obtido apenas no produto final de todo conjunto de trens de engrenagens. Isso significa que para o motor conseguir ter a torque/velocidade final requerida, ele deve enfrentar primeiro todo o processo inicial de movimentação das engrenagens que adicionam certa resistência ao conectar-se ao eixo do motor. Iniciado sua rotação, o motor terá a baixa rotação/torque requeridos.
+
+
+		\subsubsection{Montagem}
+			Como os motores obtidos para o trabalho possuem alta velocidade para a movimentação do carro, será utilizado além de caixa de reduções, sensores para captação de dados de velocidade, onde seus dados serão enviados para a \textit{cloud}, processados e recebidos novamente para assim realizar a atuação no carro. Isso exceto no caso do Carro \textit{B}, no qual não haverá processamento, mas sim somente sua atuação, sendo este somente um receptor escravo.
+
+			Todos esses componentes serão acoplados à \textit{board} utilizando um \textit{motor shield} intermediário entre o microcontrolador e os motores. Tal \textit{motor shield} realizará o processo de interface de controle e energização dos motores criando assim um sistema estável. Seu nome é L293DD e possui suporte total para interface de pinos NodeMCU. Seu sistema de operação utiliza Ponte-H dupla e com isso é possível controlar até dois motores além de conectores para seleção de interface serial UART, SPI, e entrada analógica, além de conexões para habilitar as opções de \textit{Enable} e \textit{Reset} do microcontrolador. Ele pode ser visto por meio da Figura \ref{fig:eq-motor_shield}.
+
+			\begin{figure}[h]
+				\centering
+				\includegraphics[width=0.9\linewidth]{img/elementos-motor_shield.jpg}
+				\caption{Motor \textit{Shield} a ser Utilizado.}
+				\label{fig:eq-motor_shield}
+			\end{figure}
+
+			No conjunto de componentes também é incluído duas rodas de borracha com $65mm$ e $30mm$ de largura.
+
+
+
+		\begin{comment}
+	\subsection{Visão Geral do Controle} \todo{a}
+		O carro, ao andar pra frente, ficará numa velocidade\footnote{Velocidade monitorada pelo \textit{encoder} e o controlador.} máxima fixa. Quando algum de seus sensores perceber que o carro saiu da linha gerando uma interrupção, o procedimento de correção de direção será acionada para avaliar os dados dos sensores e assim verificar os passos a serem realizados nos atuadores para que o carro volte a operar normalmente na direção correta em cima da faixa.
+
+		%Existem dois tipos de comportamentos em um seguidor de linha comumente conhecido. Eles serão descritos e explicados a seguir.
+
+
+		\subsubsection{Comportamentos de um Sistema Sem Controle}
+			Neste exemplo onde não possui-se realimentação no controle, mostrado na Figura \ref{fig:trajeto2}, é possível perceber que, carro fará seu trajeto com muita dificuldade. Seu meio de processamento baseia-se unicamente no ato parar totalmente o carro ao esbarrar na linha. Este tipo de controle funciona, mas não traz uma otimização aos movimentos realizados pelo carro, pois o carro não utiliza nenhum recurso de realimentação para realizar movimentos mais precisos.
+
+			\begin{figure}[h]
+				\centering
+				\includegraphics[width=0.5\linewidth]{img/elementos-trajeto2.jpg}
+				\caption{Trajeto esperado de um seguidor de linha comum.}
+				\label{fig:trajeto2}
+			\end{figure}
+
+			%O movimento oscilatório exibido na Figura \ref{fig:trajeto2} faz com que o carro gaste tempo em completar sua tarefa de percorrer a linha e também energia, item essencial para sistemas embarcados. 
+			%Nesta situação relacionando à especificação do trabalho, o carro $ \mathcal{A} $ com seus movimentos oscilatório gerarão um mapa do trajeto complexo o suficiente para que o carro $ \mathcal{B} $ não consiga finalizar sua tarefa. Tais movimentos oscilatórios podem fazer o carro  $ \mathcal{B} $ se perder facilmente com o acúmulo de erros em cada movimento realizado.
+
+
+		%\subsubsection{Comportamentos Sobre Controle Proporcional}
+		%Utilizando um controle proporcional, o carro terá um fator de realimentação no qual passará a ter movimentos mais suaves e relativos às suas atividades e assim, seu trajeto poderá ser mais conciso quanto à linha do trajeto a ser executada. 
+		%O resultado esperado é exibido na Figura \ref{fig:trajeto3}.
+
+		\begin{figure}[h]
+			\centering
+			\includegraphics[width=0.5\linewidth]{img/elementos-trajeto3.jpg}
+			\caption{Trajeto esperado de um seguidor de linha utilizando Controle Proporcional.}
+			\label{fig:trajeto3}
+		\end{figure}
+
+		%Um fato importante a se atentar é que, para que o carro funcione como esperado, o algoritmo, seus parâmetros e os parâmetros da fórmula de controle proporcional devem estar devidamente calibrados para que o carro obtenha a melhor performance possível.
+
+		%Este trajeto faz com que seus movimentos sejam mais suaves, estáveis, ágeis e eficientes em relação ao mostrado na Figura \ref{fig:trajeto2}, exibida anteriormente.
+		\end{comment}
+
+	\subsection{Microcontrolador}
+		Microcontrolador utilizado para este trabalho é o NodeMCU. É um plataforma IoT\footnote{\textit{Internet of Things}, ou seja, internet das coisas.} \textit{open-source}.
+
+		Como esperado de um microcontrolador para IoT o sistema possui integrado um componente de comunicação Wi-Fi para troca de dados. Utiliza linguagem de \textit{script} Lua desenvolvida por brasileiros ou IDE e linguagem Arduino.
+
+		Suas especificações são uma CPU ESP8266 possuindo 128 KB de memória, 4 MB de armazenamento e suporta o sistema operacional chamado XTOS. Permite comunicação pelo Wi-Fi e USB onde também é energizada. Possui um total de 10 pinos de entrada e saída de propósito geral (GPIO) onde suportam funções como PWM, comunicação I$ ^2 $C e 1-wire. Além da antena Wi-Fi, possui também um conversor USB-TTL para comunicação serial.
+
+		A Figura \ref{fig:eq-nodemcu} exibe um esquemático de seu protótipo.
+
+		\begin{figure}[h]
+			\centering
+			\includegraphics[width=0.99\linewidth]{img/elementos-nodemcu.jpg}
+			\caption{O Microcontrolador NodeMCU e seus Componentes e I/O.}
+			\label{fig:eq-nodemcu}
+		\end{figure}
+
+		Sua programação pode ser feita por diversas maneiras. As duas principais são utilizando um terminal serial para envio de comandos diretamente à placa usando a porta USB do controlador.
+
+		Como ela possui placa de comunicação Wi-Fi e um controlador poderoso, é possível também transformá-la num \textit{Web Service} para que realize toda a comunicação sem fio.
+
+
+	\subsection{Alimentação}
+
+		Os motores devem ter como entrada $6V$ e possui velocidade média de $90\pm10rpm$ com corrente de 250 mA sem carga. Sua corrente de partida pode chegar a $1A$.
+
+		Utilizando um \textit{jump}, é possível criar um curto de tal forma que os motores e o NodeMCU poderiam ser energizados por tal, permitindo total controle e a utilização de nenhum fio para alimentação do sistema.
+
+		Sua energização será realizada por meio de fonte externa utilizando dois \textit{pack} de 4 pilhas em série.
+
+		Utilizar uma fonte por meio da interface USB diretamente no microcontrolador não seria suficiente para energizar todos os atuadores e sensores do sistema. Dessa forma, a fonte externa alimentará os atuadores e o microcontrolador e este alimentará todos os sensores nele contido.
+
+
+	\subsection{Nuvem}
+		Como os processadores não podem realizar processamento seguindo a especificação, utilizou-se de um servidor construído em Python para a comunicação e processamento de ambos os carros. Utilizar este tipo de sistema traz várias vantagens com redução de gasto energia nos carros e centralização de processamento e \textit{backup} de informações em local seguro além da transparência do sistema de controle. Também permite que as configurações de execução do carro sejam feitas totalmente via servidor, já que este enviará controles aos carros.
+
+		Entretanto, latências altas em comunicações ou pacotes de informações corrompidas e interferências de ambiente podem tornar o sistema inconsistente ou até mesmo comprometido para seu propósito.
+
+
+\section{Modelamento Matemático} \label{sec:math}
+
+	\begin{comment}
+	
+	\subsection{Teoria da Equação Diferencial Linear}
+		Equações Diferenciais Lineares são equações que suas soluções podem ser somadas a fim de produzir uma nova solução.
+
+		É considerada linear quando satisfaz as características de que cada coeficiente a $a_{n}$ e o termo de não-homogeneidade só dependem da variável independente, no caso $x$; e a variável dependente, no caso $y$, e suas derivadas são de primeiro grau. Assim, ela deve representar a seguinte forma
+
+		\begin{equation}
+		f(x) = a_{n}(x)\frac{d^{n}y}{dx^{n}} + a_{n-1}(x)\frac{d^{n-1}y}{dx^{n-1}} + \cdots +  a_{1}(x)\frac{dy}{dx} + a_0(x)y
+		\end{equation}
+
+		No uso para problemas que utilizam Controle Proporcional descrito no Seção \ref{sec:controle_proporcional}, basta desligar todas as derivadas e integrais da equação obtendo
+
+		\begin{equation}
+		f(x) = a_{n}(x) + a_{n-1}(x) + \cdots +  a_{1}(x) + a_0(x)y
+		\end{equation}
+	\end{comment}
+
+
+	\subsection{Definições}
+		%https://syclops.wordpress.com/2011/08/06/part-2-line-following-robot-code-guideline-arduino-using-pid/
+		Para iniciar a discussão sobre sistema de controle proporcional, primeiramente será definido os termos utilizados. 
+
+		\begin{description}
+			\item[\textit{Alvo:}] É a posição que desejamos que o carro esteja em relação à faixa, ou seja, centralizado respeitando a devida linha.
+
+			\item[\textit{Erro:}] Diferença entre a posição atual e o \textit{Alvo}. Pode ser qualquer valor no conjunto dos ${\rm I\!R}$.
+
+			\item[\textit{Proporção:}] Fator que determinará quão distante o carro está da linha. Por exemplo são as proporções: `\textit{para a esquerda}',  `\textit{para a direita}', `\textit{para a extrema esquerda}', `\textit{pouco para a direita}', etc. É representado pela constante de variação $ K_p $.
+
+			\begin{comment}
+				\item[\textit{Integral:}] Proporciona o erro acumulado sobre o tempo corrido. Isso significa que este irá informar se o carro vem estando na linha nos últimos momentos ou não. Representada pela constante de variação $ K_i $.
+
+				\item[\textit{Derivada:}] Taxa no qual exibe a oscilação do carro sobre a linha, representada pela constante de variação $ K_d $.
+			\end{comment}
+
+		\end{description}
+
+		%Ambos \textit{Integral} e \textit{Derivada} utilizam o valor \textit{Proporção}.
+
+		O procedimento de execução é baseado no seguinte pseudocódigo:
+		\begin{enumerate} \it
+			\item Realiza o cálculo inicial da posição atual.
+
+			\item Calcula o erro baseado na posição atual.
+
+			\item Ele então comandará os motores para fazer uma girada:
+			\begin{itemize}
+				\item \underline{Brusca} caso o erro for grande; ou
+				\item \underline{Leve} caso o erro for pequeno.
+			\end{itemize}
+			Assim, basicamente, a magnitude do giro tomado é proporcional ao \textit{erro}.
+
+			\item Repete os passos até completar o objetivo proposto.
+		\end{enumerate}
+
+		Com esses passos, saímos de um controle simples para um Controle Proporcional mais eficaz.
+
+		\begin{comment}
+
+			Mesmo se depois desses passos o valor de \textit{erro} não decrementar ou decrementar de forma bem lenta, ao realizar o passo 4, o controlador fará uma nova avaliação incrementando a magnitude de conserto de posição realizando novamente de forma mais brusca a tentativa de posicionar o carro novamente à posição centralizada. Esse processo só é possível por causa do Controle Integral. O efeito de redução de oscilação por tempo é trabalho pelo Controle Derivativo.
+
+			O Controlador Proporcional Integral-Derivativo, também chamado de Controlador PID, é uma metodologia de cálculo de controle de processo que une várias outras menores. Utiliza de teorias como as Ações Derivativa (Controle PD), Integral (Controle PI) e Proporcional (Controle P).
+
+			Estes quatro modos de controle, incluindo PID, são também designados de ações de controle, cada uma delas reagindo de forma distinta ao erro presente nos sistemas. O controle:
+
+			\begin{itemize}
+				\item Proporcional: ajusta a variável de controle de forma proporcional ao erro;
+				\item Integral: ajusta a variável de controle baseando-se no tempo em que o erro acontece;
+				\item Derivativo: ajusta a variável de controle tendo como base a taxa de variação do erro; e
+				\item A combinação destes tipos de controle forma o controlador PID.
+			\end{itemize}
+
+		\end{comment}
+
+		São amplamente utilizados em situações que se baseiam em controladores eletrônicos chamados ``\textit{single-loop}''.
+
+		Abaixo é descrito a formulação matemática do conceito de controlador proporcional
+
+	\subsubsection{Teoria de Controle Proporcional (P)} \label{sec:P}
+		Produz um sinal de saída que é proporcional ao parâmetro do erro
+
+		\begin{equation}
+		P_{t} = P_{t-1} \times K_{p}\,{e(t)} \label{math:p}
+		\end{equation}
+
+		onde:
+
+		\begin{description}
+        	\item[$ P_t $\textit{:}] Relação de atuação no tempo $t$;
+			\item[$ t $\textit{:}] Leitura dos sensores no tempo $t$;
+			\item[$ e(t) $\textit{:}] Erro relativo ao tempo $ t $;
+			\item[$ K_p $\textit{:}] Constante relativa à proporção, chamado de ganho proporcional.
+		\end{description}
+
+		%Esse método possui a propriedade de eliminar as oscilações do sinal de saída. 
+        %Para tal, o sistema permanece sempre ligado e o sinal de saída é diferente de zero.
+        Dessa forma, sobre a Equação \ref{math:p}, a proporção de erro é dada pela constante $K_p$, o erro pela função $ e(t) $ e o alvo é o valor de $ P_{t} $ no qual será o valor que o controle obteve a fim de obter a melhor performance em relação ao alvo imposto.
+
+	\begin{comment}
+		\subsection{Funcionamento Teórico-Procedural}
+			Aqui será descrito uma representação de como será a implementação de toda a teoria descrita neste trabalho. Assim, de forma geral, teremos o seguinte algoritmo implementado para tratamento dos valores obtidos dos sensores e ajuste da rotações dos motores.
+
+			\begin{algorithm}[h]
+				\caption{Controle Proporcional de Correção de Angulação}\label{euclid}
+				\begin{algorithmic}[1]
+					%\Procedure{proportional\_control}{$ position, set\_point, \Delta, \int, last\_\Delta, y', \Phi $}
+					\Procedure{proportional\_control}{$ position, set\_point, \Delta, last\_\Delta, \Phi $}
+
+					\State $ \Delta \gets position - set\_point $
+					%\State $ \int \gets \int + \Delta $
+					%\State $ y' \gets \Delta - last\_\Delta $
+					\State $ \Phi \gets \Delta * K_p $
+					%\State $ \Phi \gets \Delta * K_p + \int * K_i + y' * K_d $
+					\EndProcedure
+				\end{algorithmic}
+			\end{algorithm}
+
+			onde:
+
+			\begin{description}
+				\item[\textit{position:}] Posição atual do carro.
+
+				\item[\textit{set\_point:}] Ponto central onde encontra-se a faixa.
+
+				\item[$ \Delta $\textit{:}] Representa o erro proporcional da posição atual contra o ponto central da faixa.
+do
+				%\item[$ \int $\textit{:}] Representa o acúmulo de erro atual.
+
+				\item[$ last\_\Delta $\textit{:}] Representa o erro proporcional da posição da iteração passada.
+
+				%\item[$ y' $\textit{:}] Retêm a diferença entre os erros atual e da iteração anterior.
+
+				\item[$ \Phi $\textit{:}] Correção a ser realizada nesta iteração.
+			\end{description}
+
+			Como é de se esperar, a correção proporcional $ \Phi $ será aplicada à velocidade motor para conserto de posição do carro.
+	\end{comment}
+\include{SE-Seguidor_Linha_2}
+
+\include{codigo}
+
+\end{document}

@@ -1,0 +1,254 @@
+
+
+\section{Análise Analítica} \label{sec:analitico}
+	De forma a adentrar na causa que impediu a conclusão do trabalho com sucesso, realizou-se testes analíticos a fim de demostrar a causa dos problemas citados.
+
+	% explicando os intervalos e as situações
+	Para o funcionamento do carro de forma correta, seria necessário o controle proporcional ter gerência de vários intervalos de velocidade, desde a velocidade máxima até a menor, incluindo quando o motor estiver parado. 
+	Ao possuir um intervalo grande de velocidade, permite-se que o carro fizesse curvas com melhor controle evitando as oscilações grandes.
+	Eliminando a situação de quando o motor está parado, para validação, analisou-se das duas ocasiões mais importantes enfrentadas pelo carro, sendo essas quando ele está em alta e baixa rotação. 
+	Esses dados são importantes pelo fato que ambas (alta e baixa rotação) são velocidade extremas do intervalo usado pelo controle e que elas possuem outras variáveis que influenciam na sua atuação como a intensidade da corrente de partida e a resistência dos trens de engrenagem situados em cada motor, por exemplo.
+
+	Dessa forma, como o NodeMCU gera um intervalo de 0 à 1023 para valores de PWM para os motores, utilizou-se dos valores 1023 e 600 para alta e baixa rotação respectivamente, visando a análise de atuação de cada um dos valores. 
+	O carro que comporte em ambas as situações permite-se concluir que ele possui todos os requisitos físicos necessários para que o controle consiga operar com mais facilidade obtendo melhor precisão em suas tarefas propostas.
+	Assim, o carro que não realizar bem tais movimentos, poderá ter problemas futuros como estabilidade e precisão, por exemplo.
+
+	Outro item a mencionar sobre o teste são os itens mensurados. Como em algumas situações o acionamento não necessariamente implica no giro da roda, comparou-se a intensidade de corrente do motor em modo de partida, nominal e em movimento. Descrevendo melhor:
+
+	\begin{description}
+		\item [Partida:] Intensidade de corrente que o motor necessita para gerenciar a partida, ou seja, a tentativa de movimento;
+		\item [Nominal:] Intensidade de corrente após a tentativa de partida inicial. Valores normativos do motor ao longo do tempo seguindo um mesmo valor de entrada de PWM;
+		\item [Movimento:] Intensidade do motor quando este está realmente realizando o movimento giratório, ou seja, quando realmente conseguiu sair da inércia inicial que é estar sem movimento.
+	\end{description}
+
+	Executou-se dez testes mensurando os valores de intensidade de corrente em todos as situações Partida (Tabela \ref{tab:corrente_partida}), Nominal (Tabela \ref{tab:corrente_nominal}) e Movimento (Tabela \ref{tab:corrente_rotacionado}).
+
+	\begin{table}[H]
+    	\centering
+    	\caption{Tabela de valores médios de intensidade de corrente de partida aos principais movimentos requeridos pelo carro robô.}
+	    \begin{tabular}{|c|c|c|c|} \hline
+	    ~                      & $\bar{X}$ \textbf{Corrente de Partida}   & $\sigma$   & \textbf{\% Erro} \\ \hline \hline
+	    \textbf{Alta  Rotação} & $313,7mA$                                & $26,36938$ & $8,338732$    \\ \hline
+	    \textbf{Baixa Rotação} & $283,2mA$                                & $19,65706$ & $6,216108$    \\
+	     \hline
+	    \end{tabular}   \label{tab:corrente_partida}
+	\end{table}
+
+	\begin{table}[H]
+    	\centering
+    	\caption{Tabela de valores médios de intensidade de corrente nominal aos principais movimentos requeridos pelo carro robô.}
+	    \begin{tabular}{|c|c|c|c|} \hline
+	    ~                      & $\bar{X}$ \textbf{Corrente Nominal} & $\sigma$   & \textbf{\% Erro} \\ \hline \hline
+	    \textbf{Alta  Rotação} & $138,9mA$                           & $14,22400$ & $4,498024$     \\ \hline
+	    \textbf{Baixa Rotação} & $215,7mA$                           & $11,75727$ & $3,717974$     \\ 
+	     \hline
+	    \end{tabular}   \label{tab:corrente_nominal}
+	\end{table}
+
+	\begin{table}[H]
+    	\centering
+    	\caption{Tabela de valores médios de intensidade de corrente com o motor rotacionando aos principais movimentos requeridos pelo carro robô.}
+	    \begin{tabular}{|c|c|c|c|} \hline
+	    ~                      & $\bar{X}$ \textbf{Corrente c/ Motor em Rotação} & $\sigma$   & \textbf{\% Erro} \\ \hline \hline
+	    \textbf{Alta  Rotação} & $142,0mA$                                         & $5,656854$ & $1,788854$     \\ \hline
+	    \textbf{Baixa Rotação} & $130,8mA$                                         & $18,68927$ & $5,910067$     \\ 
+	     \hline
+	    \end{tabular}   \label{tab:corrente_rotacionado}
+	\end{table}
+
+	%\begin{comment}
+partida 600:  261, 272, 301, 250, 286, 288, 272, 308, 309, 285
+nominal 600:  222, 221, 220, 215, 218, 183, 219, 220, 216, 223
+rodando 600:  111, 108, 110, 150, 136, 137, 167, 135, 129, 125
+
+partida 1023: 304, 316, 351, 332, 352, 292, 312, 266, 299, 313 
+nominal 1023: 121, 136, 120, 142, 139, 150, 162, 153, 143, 123
+rodando 1023: 139, 150, 140, 144, 132, 142, 151, 142, 137, 143
+2 pack - 1 motor
+
+			com atrito
+			2 pack
+			duas rodas
+			max 481 492 569 448 461
+			nominal 247
+
+			roda esquerda
+			max 203 275 229 309 266 309 262 275 226 285
+			nominal 118 110 119 117 123 128 112 116 117 112
+
+R version 3.3.0 (2016-05-03) -- "Supposedly Educational"
+Copyright (C) 2016 The R Foundation for Statistical Computing
+
+R é um software livre e vem sem GARANTIA ALGUMA.
+Você pode redistribuí-lo sob certas circunstâncias.
+Digite 'license()' ou 'licence()' para detalhes de distribuição.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Digite 'demo()' para demonstrações, 'help()' para o sistema on-line de ajuda,
+ou 'help.start()' para abrir o sistema de ajuda em HTML no seu navegador.
+Digite 'q()' para sair do R.
+
+[Área de trabalho anterior carregada]
+
+>
+>
+>
+>
+>
+> partida_600 = c(261, 272, 301, 250, 286, 288, 272, 308, 309, 285)
+> sd(partida_600)
+[1] 19.65706
+> summary(partida_600)
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max.
+  250.0   272.0   285.5   283.2   297.8   309.0
+> sd(partida_600)
+[1] 19.65706
+>
+>
+> partida_1023 = c(304, 316, 351, 332, 352, 292, 312, 266, 299, 313)
+> sd(partida_1023)
+[1] 26.36938
+> summary(partida_1023)
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max.
+  266.0   300.2   312.5   313.7   328.0   352.0
+>
+>
+> nominal_600 = c(222, 221, 220, 215, 218, 183, 219, 220, 216, 223)
+> sd(nominal_600)
+[1] 11.75727
+> summary(nominal_600)
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max.
+  183.0   216.5   219.5   215.7   220.8   223.0
+>
+>
+> nominal_1023 = c(121, 136, 120, 142, 139, 150, 162, 153, 143, 123)
+> sd(nominal_1023)
+[1] 14.224
+> summary(nominal_1023)
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max.
+  120.0   126.2   140.5   138.9   148.2   162.0
+>
+>
+> rodando_600 = c(111, 108, 110, 150, 136, 137, 167, 135, 129, 125)
+> sd(rodando_600)
+[1] 18.68927
+> summary(rodando_600)
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max.
+  108.0   114.5   132.0   130.8   136.8   167.0
+>
+>
+> rodando_1023 = c(139, 150, 140, 144, 132, 142, 151, 142, 137, 143)
+> sd(rodando_1023)
+[1] 5.656854
+> summary(rodando_1023)
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max.
+  132.0   139.2   142.0   142.0   143.8   151.0
+>
+>
+>
+> std <- function(x) sd(x)/sqrt(length(x))
+> std(partida_600)
+[1] 6.216108
+>
+> std(partida_1023)
+[1] 8.338732
+>
+> std(nominal_1023)
+[1] 4.498024
+>
+> std(nominal_600)
+[1] 3.717974
+>
+> std(rodando_1023)
+[1] 1.788854
+>
+> std(rodando_600)
+[1] 5.910067
+>
+>
+	%\end{comment}
+
+		Sendo o cálculo do erro seguindo a fórmula $\frac{\sigma}{\sqrt{|x|}}$ no qual $x$ sendo os total de valores coletados.
+
+	%teste alta velocidade
+	\subsection{Análise da Alta Rotação}
+		Olhando primeiramente a alta rotação, o carro possui força suficiente para iniciar seu movimento com a corrente de partida ($313,7mA$) e, depois de vencer a inércia, a corrente estabiliza em valores próximos à $138,9mA$ fazendo o motor girar. 
+
+		Todos os dez testes realizados com esta potência o carro teve sucesso suficiente para vencer sua inércia inicial. Isso deve-se ao fato da aceleração do motor ser muito alta, sobrepondo qualquer resistência física que impede o movimento da roda.
+
+	%teste baixa velocidade
+	\subsection{Análise da Baixa Rotação}
+		Diferentemente do teste de alta rotação, o teste com baixa velocidade não obteve tanto sucesso. Nos testes de baixa rotação, o valor de intensidade de corrente de partida teve uma média de $283,2mA$, entretanto, em todos os testes esse valor de potência não foi suficiente para iniciar a rotação no motor, ou seja, os testes realizados com o valor $600$ de PWM fracassaram ao girar a roda, mesmo o motor demonstrando aplicar a força ao emitindo barulho de acionamento. 
+
+		Verificando a dificuldade do início da rotação nos testes de baixa velocidade, realizou-se uma pequena ajuda manual à roda para o giro inicial e percebeu que, para este giro inicial, o motor aplica uma força suficiente para a movimentação do carro mas insuficiente para vencer a resistência dos trens de engrenagens da caixa de redução.
+
+\section{Discussão} \label{sec:discussao}
+	%Após os testes, percebeu-se alguns problemas principais no projeto sendo eles: 1) Resistência das engrenagens da caixa de redução; e 2) Torque fraco dos motores. Eles serão descritos a seguir.
+
+	%  peso do carro
+	%O primeiro problema é o \todo{peso} do carro. Ao adicionar todos os componentes para seu funcionamento, percebeu-se que o carro possui \todo{peso} elevado. Os motores possuem força o suficiente para realizar o movimento do carro, mas com \todo{peso} elevado, o controle terá maior dificuldade de controlar a partida dos motores e a estabilização da velocidade.
+
+	% engrenagens
+	Realizado todos os testes, o principal problema encontrado no projeto no qual influencia na execução e completude é a resistência dos trens de engrenagens existente na caixa de redução de cada motor. 
+	Esse problema físico foi facilmente perceptível ao visualizar a situação na qual o motor de fato injetava potência para iniciar o giro e não conseguia. A resistência das engrenagens é tamanha que, após vencido e iniciado o giro da roda, a potência é forte o suficiente para conseguir mover o carro. Ou seja, a potência é suficiente para arrastar o carro, mas não para dar sua partida.
+
+	% problema da engrenagens resolvidas pelo controle
+	Esse problema poderia sim ser resolvido pelo controle, acionando mais potência no início e depois equilibrando no início de seu movimento. Entretanto, injetar mais potência na partida faz com que sua aceleração seja alta de tal forma que, após iniciada, o controle não consiga corrigí-la. Isso é causado pelo item mencionado em Seção \ref{sec:problema_motor} no qual é descrito um certo atraso na atuação do motor, podendo causar descontrole de seus movimentos e consequentemente a perdendo o caminho a seguir. O problema das engrenagens é tamanha que, houve situações de execução em que o carro injetou potência máxima nos motores (valor $1023$ de PWM) e eles não conseguiram vencer a resistência das engrenagens. O problema da resistência facilmente resolvido ao adicionar mais pares de motores ao carro, entretanto, o chassi do carro não possui suporte para a instalação de mais motores com seus \textit{encoders}.
+
+	% valores altos de potência fazem o carrinho perder o controle
+	Explicando melhor o descontrole do carro, pelo controle, na sua aceleração, pois primeiro, o uso de um controle proporcional simples, sem uso de ferramentas Integrais ou Derivativas para maior controle da situação o tornam um controle mais precário.
+	Segundo, pela situação na qual o carro deve percorre $9\degree$ (ou seja, $0,5105$ centímetros) para que o controle note o início do movimento. Esse valor teoricamente pode parecer insignificante, mas essa distância percorrida somada com a distância sobre de processamento do carro ($30$ milissegundos), do processamento da nuvem e sua a latência de comunicação de envio e do recebimento de dados até a atuação do controle faz com que o carro percorra cerca de $1,742$ centímetros até que a atuação seja totalmente completada. Esse valor de distância é suficiente para fazer com que o carro extrapole o tamanho da faixa e saia da pista, mesmo tenho realizado o procedimento de alteração de movimento.
+
+	Além deste problema de controle, as acelerações e comportamentos entre cada carro são realizadas de forma bastante diferentes. Uma simples aceleração mais brusca ou lenta faz com que tal erro seja exponencial a qualquer movimento futuro que o carro fará. Com ele não possui um item de controle de posição, o carro fica a mercê da precisão exercida pelo controle à velocidade angular e principalmente sobre sua aceleração no qual torna-se o maior problema do carro neste projeto.
+
+	%comparacao
+	Dessa forma, sabendo de tais problemas físicos do carro, realizou-se uma análise das situações mais importantes que o robô enfrenta com base em movimento teóricos perfeitos que fariam o carro realizar a tarefa proposta com sucesso.
+	Na teoria, a baixa rotação deveria ser acionada e estabilizada com valores de intensidade de corrente nominal $I_{nominal} = 130,8$. Entretanto, a corrente de partida $ I_{partida} = 283,2$ não é suficiente para iniciar a movimentação do carro. Dos testes realizados com propósito do motor conseguir dar a partida, necessitou-se de intensidades de correntes maiores que $I_{giro} = 311,1$ para obter seu início. Isso da uma diferença de corrente de $I_{diferenca\_partida} = 27,9mA$, ou seja $10,1505\%$ de potência a mais para as rotações.
+
+
+
+\section{Conclusão} \label{sec:conclusao}
+	%introducao
+	%Não foi possível construir um carro $ \mathcal{A} $ inteligente o suficiente por conta de dois problemas correlacionados: a falta de torque do carro.
+
+	Como demostrativo do resultado final do projeto, segue os \textit{links} disponibilizou-se três vídeos para exemplificar o funcionamento do carro. O primeiro vídeo \url{https://youtu.be/RWjgYUrU1Fo} exibe o carro $ \mathcal{A} $ realizando seu dever de completar o trajeto. O mesmo vídeo pode ser visto em câmera lenta, gravado em $240fps$ percebendo cada detalhe do carro e seu procedimento de controle, disponível em \url{https://youtu.be/xk-tbqkAVOs}. Também foi disponibilizado um vídeo demonstrando o tempo de demora na atuação dos motores após a leitura da faixa no qual pode ser verificado em câmera lenta, disponibilizado em \url{https://youtu.be/pGvHHe4h54I}. Por fim, outro vídeo (com música de fundo) demonstrando outra atuação do carro, disponível em \url{https://youtu.be/SD5c9YnoTfo}. Não há demonstração do carro $ \mathcal{B} $ pois todos os testes realizados com tal foram falhos.
+
+	% tempo de resposta
+	O primeiro item físico notado na construção e uso do carro que dificultaria a conclusão do projeto é a latência de resposta do motor em virtude ao intervalo de resposta requerido ao controle para manter o carro na pista. Uma vez que o motor possui alta latência de resposta, o carro fica totalmente à mercê da atuação final do motor.
+
+	% engrenagens
+	As caixas de reduções são componente que mais causou empecilho ao trabalho. Sua resistência é tamanha que o carro, mesmo com torque suficiente para mover o carro em baixas rotações, não consegue vencer à resistência dos trilhos de engrenagens quando o carro encontra-se estacionado. Assim, para garantir movimentos mais suaves, será viável a utilização de um sistema de engrenagens que não obtivesse tanta resistência.
+
+	% peso}
+	Obviamente, utilizar componentes mais leves faz com que o carro tenha mais facilidade de movimentação dispondo menos resistência aos motores. Quanto menor a resistência enfrentadas pelos motores, mais será a eficiência energética e e seu fator de controle.
+
+	% novo chassi
+	Propor um trabalho fornecendo um chassi que tenha suporte à mais motores e seus \textit{encoders} faz com que o trabalho possa ser desmembrado em mais opções de construções. Alterar a estrutura física do carro, adicionando mais motores por exemplo, faz com que o desenvolvimento do carro seja abordado de mais formas, escolhendo a que mais atrela ao ambiente testado e equipamentos disponibilizados.
+
+	% mais tricks seria legal
+	Utilizar um \textit{encoder} que foneça uma percepção maior de movimento faz com que o controle gerencie a velocidade do carro com mais precisão. O modelo atual utilizado usa apenas 3 valores de velocidade pois o tempo de captura de taxa de variação é muito rápido e o intervalo de \textit{tricks} é a cada $9\degree$ criando curta amostra de velocidade. Os três valores de velocidade representam os estados onde o carro está com o motor parado (ou seja, zero \textit{tricks}), e os outros valores de velocidade 1 e 2 que representam respectivamente a taxa de \textit{tricks} ao tempo, projetado para ser de $30$ milissegundos.
+
+	%O carro $ \mathcal{A} $ consegue completar o trajeto com muita dificuldade pela quantidade de sensores que o carro possui, incluindo seus chassis, rodas, motores, controlador etc. A fim de contornar esse problema, implementou-se um controlador que fosse capaz de lidar com esse problema de atuação dos motores obrigando o carro parar a cada momento que encontra uma faixa, já que este fica impossibilitado de movimentar mesmo utilizando dois \textit{packs} de pilhas com um total de $6V$ cada. 
+
+	% dificuldades
+	Discutindo um pouco sobre algumas dificuldades encontradas no projeto e desenvolvimento do carro, todos os dois \textit{motor shield} fornecidos para o trabalho possuíam problema de circuito físico no qual, o componente \textit{not} que permitia o motor girar em sentido contrário estavam danificados. Não se sabe o motivo da danificação. Gastou-se muito tempo descobrindo a falta deste circuito integrado e por isso o projeto foi fundado sobre o \textit{motor shield} incapacitado de girar os motores em sentido reverso.
+
+	O modelamento matemático do projeto a ser implementado deve ser descrito com conhecimentos prévios dos componentes tal como seus problemas físicos do trabalho para incrementar mais variáveis à formula a fim de aprimorar mais os resultados.
+
+	A geração de um mapa de trajeto para que o carro $ \mathcal{B} $ realize também foi tido como uma tarefa problemática ao projeto. Realizou-se várias tentativas de geração e aplicação de mapas utilizando várias combinações de sensores mas todas foram fracassadas ao ponto de tentar gerar pontos de localização a fim de que o segundo, carro $ \mathcal{B} $, possa utilizar tal estratégia para reprodução.
+
+
+	% Utilização de controles mais eficientes
+	O controle proporcional desenvolvido neste trabalho é capaz de realizar a tarefa do carro $ \mathcal{A} $ de completar o circuito do carro em seu trajeto, mas não é otimizado o suficiente para extrair máximo proveito dos recursos do carro. Sendo assim, é possível realizar um novo estudo aprofundado em teoria de controle com os conhecimentos adquiridos neste trabalho sobre detalhes físicos com o propósito de melhorar o carro $ \mathcal{A} $ de forma a realizar suas tarefas com maior precisão.
+
+	% I e D
+	Como utilizou-se uma variante do controle proporcional (P) simples, o trabalho de pesquisa e projeto poderá ser continuado utilizando controles proporcionais mais estáveis usando por exemplo técnicas mais elaboradas como a mescla de controles proporcionais com integrais e derivativos.
+
+	% ganhos
+	Neste trabalho foi possível perceber claramente a aprendizagem de controles proporcionais de primeira ordem. Este exemplo simples de \textit{follow line} do trabalho mostrou-se claro ao comparar as vantagens da utilização de tais controles utilizados corretamente para obter melhores resultados na sua tarefa. Qualquer tipo de sistema que utilize malha aberta poderia ser aprimorado a utilizar malha fechada a ponto de obter resultados mais controlados e seguros em duas atuações, tendo em mente que para isso, sensores e atuadores são necessários para que haja o processamento do controle na malha.
+	Outro tópico aprendido na realização deste trabalho é o aperfeiçoamento das técnicas básicas de confecção, manuseio e aferição de circuitos eletrônicos simples. Neste trabalho, foi necessário conhecimentos básicos sobre corrente elétrica, teoria de circuitos eletrônicos e operação com algumas ferramentas do multímetro.

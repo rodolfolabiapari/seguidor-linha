@@ -1,0 +1,74 @@
+% antiga recorrencia
+
+
+\begin{comment}
+	Para modelar a forma de como o robô se move em relação à pista, utilizou-se como base a Equação \ref{math:p} para o desenvolvimento do modelo de recorrência do controle.
+    
+    Para a construção do controle, será levado em consideração todo o referencial teórico da \todo{Parte} \ref{sec:parte1} e os itens descritos na Parte \ref{sec:parte2} do documento.
+    
+    Como no trabalho desenvolvido o controle situa-se em nuvem, não foi possível, por causa da latência de leitura até sua atuação pós-controle, criar um controle que fosse capaz de gerenciar a velocidade do motor a fim de evitar que o carro extrapole a pista. \todo{colocar as medições de tempo 1 antes?}
+    Dessa forma, foi desenvolvido um controle de velocidade do carro e a parada da roda ao encontrar a respectiva faixa.
+    
+    O controle proporcional deste trabalho situa-se no ato de controle de tensão dada ao motor para que não tenha uma aceleração brusca o suficiente para descontrolar o carro. Dessa forma, o controle encarregará de acelerar o carro e mantê-lo em uma velocidade constante.
+    Sendo assim, será explicado como foi desenvolvido a sua formula de recorrência segundo esta estratégia de controle.
+    
+    \subsection{Cálculo do Erro}
+    	A primeira parte da equação é obter os dados dos sensores e calcular o erro em relação ao alvo.
+        
+        O erro do controle é calculado em relação a velocidade requerida, seja ela o carro estar em uma determinada velocidade ou parado. Dessa forma, o controle fará o cálculo do erro atual do carro em relação à velocidade requerida e aplicar isso como forma de correção. Como o movimento dos motores no carro são independentes, será desenvolvido dois controles também independentes, cada um relativo à seu respectivo motor. Dessa forma, todo o controle descrito abaixo é a representação de cada atuador individualmente e seus respectivos sensores de leitura.
+    
+    O erro $ error\_vel $ é calculado sobre a velocidade atual $ v $ do carro em relação à velocidade ideal $ \alpha $, onde $ error\_vel[n] $ e $ v[n] $ no $ n^{th} $ representam respectivamente o valor de erro e velocidade do carro sendo que $ error\_vel[0]=0 $ e $ v[0]=0 $ pois o carro encontra-se parado sem qualquer tipo de leitura inicial. 
+    
+	%O erro de cada pista é calculado por um conjunto de dados $ error\_vel $ e sua velocidade $v$, no qual $error\_vel[n]$ e $v[n]$ no $n^{th}$ representam respectivamente o valor de erro e velocidade de cada lado do carro sendo que $error\_vel[0]=0$ e $v[0]=0$ pois o carro encontra-se parado sem qualquer tipo de leitura inicial. 
+	%A diferença entre cada item pode ser relacionado com a taxa de variação de tempo em relação a cada natureza, sendo essa a continuação ou não no erro ou velocidade.
+
+	Assim, o erro no tempo $n$ que calculado pela função $ e(t) $ é descrito como
+    
+	\begin{equation}
+		error\_vel[n] = \alpha - v[n-1]
+	\end{equation}
+
+	no qual:
+
+	\begin{description}
+		\item [$\alpha$:] constante de velocidade referência em \textit{tricks} no qual relaciona-se com o estado desejado do robô. Quando representado por $0$ (zero), deseja-se que o carro diminua pare de movimentar e quando representado por outro valor inteiro, é a taxa de \textit{tricks} por intervalo de tempo;
+		\item [$v$:] velocidade atual do motor em \textit{tricks} por tempo;
+	\end{description}
+    
+
+    Discutindo sobre essa função de cálculo de erro, existe duas situações principais: controle de aceleração e velocidade e a parada. 
+    A primeira representa a situação de quando o carro necessita manter-se numa velocidade determinada pelo $\alpha$ e o controle fará o cálculo de erro da velocidade atual em relação à velocidade determinada. Encontrado o erro, sabe-se então quão distante a ação do carro está da imposta.
+    A segunda é utilizada quando o carro encontra uma faixa. Nesta ocasião, o controle deve parar a respectiva roda a fim de que o carro chegue a não ultrapassar a linha. Dessa forma, a referência altera-se para o valor $0$ gerando um erro contrário à velocidade atual afim de exigir a parada do motor.
+
+    Conhecido a função de erro e uma vez calculado o seu resultado, utiliza-se desse então para a geração dos novos valores de potência do carro. Os novos valores de PWM são calculados com a seguinte fórmula
+\begin{comment}
+	\begin{align}
+		power[n] & = 35 \times \frac{K_p \times abs(MAX - power[n-1]) \times error}{100} \\
+		~        & = 35 \times \frac{K_p \times abs(MAX - power[n-1]) \times error\_vel[n] }{100} \\
+		~        & = 
+		\begin{cases}
+			35 \times \frac{K_p \times abs(MAX - power[n-1]) \times error\_vel[n]}{100}  & \ \text{ctrl. proporc. de vel.} \\
+			0       & \ \text{parada motor}
+		\end{cases}
+	\end{align}
+	
+	sendo:
+    \begin{description}
+    	\item [$K_p$:] constante de ganho proporcional;
+        \item [$MAX$:] limite máximo de potência ao motor.
+    \end{description}
+    
+    Com o valor calculado por tais fórmulas, o controle, realizado em nuvem, calcula o erro a cada momento da velocidade atual sobre a referência e com tais entradas, gera o valor de PWM para o carro realizar sua atuação, repetindo todo o processo para as novas leituras de sensores.
+\end{comment}
+ 
+\begin{comment}
+	LDES
+    
+\end{comment}
+ 
+ 
+\begin{comment}
+	$$y[n] = \lambda y[n-1] + bx[n-1]$$
+    
+    $$x[n] = 0, n \ne n_0; x[n]=1, n=n_0$$
+\end{comment}
